@@ -55,9 +55,9 @@ def create_specific_holiday_flags(original_holidays):
 def preprocess_data():
     le = LabelEncoder()
 
-    macro_df = pd.read_excel("walmart-sales-prediction-hyd-nov-2023/macro_economic.xlsx")
+    macro_df = pd.read_excel("backend/walmart-sales-prediction-hyd-nov-2023/macro_economic.xlsx")
 
-    weather_df = pd.read_excel("walmart-random/WeatherData.xlsx")
+    weather_df = pd.read_excel("backend/walmart-random/WeatherData.xlsx")
 
     weather_df['Month'] = le.fit_transform(weather_df['Month'])
     weather_df['WeatherEvent'] = le.fit_transform(weather_df['WeatherEvent'])
@@ -72,7 +72,7 @@ def preprocess_data():
         else:
             print(f"Column '{column}' not found in weather_df.")
 
-    holiday_df = pd.read_excel("walmart-random/Events_holidaysData.xlsx", dtype={'MonthDate': str})
+    holiday_df = pd.read_excel("backend/walmart-random/Events_holidaysData.xlsx", dtype={'MonthDate': str})
 
     holiday_df.insert(loc=2, column="Day", value=holiday_df['MonthDate'].str[2:4].astype(int))
     holiday_df.insert(loc=1, column="Month", value=holiday_df['MonthDate'].str[5:7].astype(int))
@@ -124,7 +124,7 @@ def preprocess_data():
 
     macro_df = macro_df[~macro_df["Year"].isin(years_to_remove)]
 
-    clothing_data = pd.read_csv("train.csv")
+    clothing_data = pd.read_csv("backend/train.csv")
 
     pivoted_data = clothing_data.pivot(
         index=['Year', 'Month'],
@@ -209,7 +209,7 @@ def preprocess_data():
 preprocess_data()
 
 # Load the training data
-data = pd.read_csv("trainin.csv")
+data = pd.read_csv("backend/trainin.csv")
 data = data.sort_values(['Year', 'Month'])
 
 # Parameters
