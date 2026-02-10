@@ -142,10 +142,9 @@ def preprocess_data():
 
     macro_df["PartyInPower"] = le.fit_transform(macro_df["PartyInPower"])
 
-    # Create holiday aggregations by month
     holiday_features = holiday_df.groupby(['Year', 'Month']).agg({
-        'DayCategory': 'sum',  # Count of holidays in month
-        'Event': ['count', 'nunique']  # Total events and unique event types
+        'DayCategory': 'sum',  
+        'Event': ['count', 'nunique']  
     }).reset_index()
 
     holiday_features.columns = ['Year', 'Month', 'holiday_count', 'total_events', 'unique_events']
