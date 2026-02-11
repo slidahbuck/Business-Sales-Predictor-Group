@@ -1,16 +1,15 @@
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import MinMaxScaler, StandardScaler, LabelEncoder
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression
-import tensorflow as tf
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, Dense, Dropout, BatchNormalization
-from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
-from tensorflow.keras.optimizers import Adam
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt 
+# import seaborn as sns
+from sklearn.preprocessing import LabelEncoder
+from sklearn.ensemble import GradientBoostingRegressor, RandomForestRegressor
+from sklearn.linear_model import Ridge
+from sklearn.metrics import mean_absolute_error, mean_squared_error
+from sklearn.model_selection import TimeSeriesSplit
 import warnings
 warnings.filterwarnings('ignore')
+
 
 def create_specific_holiday_flags(original_holidays):
 
@@ -55,219 +54,309 @@ def create_specific_holiday_flags(original_holidays):
 def preprocess_data():
     le = LabelEncoder()
 
+    YEARS_TO_REMOVE = [2015, 2016]
+    MONTHS_MAPPING = {
+        "Jan": 1, "Feb": 2, "Mar": 3, "Apr": 4, "May": 5, "Jun": 6,
+        "Jul": 7, "Aug": 8, "Sep": 9, "Oct": 10, "Nov": 11, "Dec": 12,
+    }
+    CLOTHING_CATEGORIES = ["WomenClothing", "MenClothing", "OtherClothing"]
+    HOLIDAY_COLUMNS = [
+        "has_christmas", "has_thanksgiving", "has_mothers_day",
+        "has_fathers_day", "has_valentines", "has_easter", "has_new_year",
+    ]
+    LAG_PERIODS = [1, 2, 3, 6, 12, 24]
+
     macro_df = pd.read_excel("backend/walmart-sales-prediction-hyd-nov-2023/macro_economic.xlsx")
-
-    weather_df = pd.read_excel("backend/walmart-random/WeatherData.xlsx")
-
-    weather_df['Month'] = le.fit_transform(weather_df['Month'])
-    weather_df['WeatherEvent'] = le.fit_transform(weather_df['WeatherEvent'])
-
-    columns_to_convert = ['Wind (km/h) low', 'Wind (km/h) avg', 'Wind (km/h) high', 'Precip. (mm) sum']
-
-    for column in columns_to_convert:
-        print(f"Processing column: {column}")
-        
-        if column in weather_df.columns:
-            weather_df[column] = pd.to_numeric(weather_df[column], errors='coerce')
-        else:
-            print(f"Column '{column}' not found in weather_df.")
-
-    holiday_df = pd.read_excel("backend/walmart-random/Events_holidaysData.xlsx", dtype={'MonthDate': str})
-
-    holiday_df.insert(loc=2, column="Day", value=holiday_df['MonthDate'].str[2:4].astype(int))
-    holiday_df.insert(loc=1, column="Month", value=holiday_df['MonthDate'].str[5:7].astype(int))
-
-    holiday_df = holiday_df.drop(columns="MonthDate")
-
-    years_to_remove = [2015, 2016]
-    holiday_df = holiday_df[~holiday_df["Year"].isin(years_to_remove)]
-
-    holiday_df = holiday_df.sort_values(['Year', 'Month'])
-
-    holiday_flags = create_specific_holiday_flags(holiday_df)
-
-    # holiday_df.to_csv("holiday_df.csv", index=False, encoding='utf-8')
-
-    # holiday_df['has_christmas'] = 
-
-    # holiday_df['Event'] = le.fit_transform(holiday_df['Event'])
-    # holiday_df['DayCategory'] = le.fit_transform(holiday_df['DayCategory'])
-
-    year_month = macro_df["Year-Month"]
-
-    years = []
-    months = []
-
-    months_mapping = {
-        "Jan": 1,
-        "Feb": 2,
-        "Mar": 3,
-        "Apr": 4,
-        "May": 5,
-        "Jun": 6,
-        "Jul": 7,
-        "Aug": 8,
-        "Sep": 9,
-        "Oct": 10,
-        "Nov": 11,
-        "Dec": 12
-        }
-
-    for item in year_month:
-        year_month_split = item.split("-")
-        years.append(int(year_month_split[0].strip()))
-        months.append(months_mapping[year_month_split[1].strip()])
-        
-    macro_df.insert(loc=0, column="Year", value = years)
-    macro_df.insert(loc=1, column="Month", value = months)
-    macro_df = macro_df.drop(columns="Year-Month")
-
-    macro_df = macro_df[~macro_df["Year"].isin(years_to_remove)]
-
+    holiday_df = pd.read_excel("backend/walmart-random/Events_holidaysData.xlsx", dtype={"MonthDate": str})
     clothing_data = pd.read_csv("backend/train.csv")
 
+    holiday_df.insert(loc=2, column="Day", value=holiday_df["MonthDate"].str[2:4].astype(int))
+    holiday_df.insert(loc=1, column="Month", value=holiday_df["MonthDate"].str[5:7].astype(int))
+    holiday_df = (
+        holiday_df
+        .drop(columns="MonthDate")
+        .query("Year not in @YEARS_TO_REMOVE")
+        .sort_values(["Year", "Month"])
+    )
+
+    holiday_flags = create_specific_holiday_flags(holiday_df)
+    holiday_flags.to_csv("holiday_df.csv", index=False, encoding="utf-8")
+
+    years, months = [], []
+    for item in macro_df["Year-Month"]:
+        year_str, month_str = item.split("-")
+        years.append(int(year_str.strip()))
+        months.append(MONTHS_MAPPING[month_str.strip()])
+
+    macro_df.insert(loc=0, column="Year", value=years)
+    macro_df.insert(loc=1, column="Month", value=months)
+    macro_df = (
+        macro_df
+        .drop(columns="Year-Month")
+        .query("Year not in @YEARS_TO_REMOVE")
+    )
+
     pivoted_data = clothing_data.pivot(
-        index=['Year', 'Month'],
-        columns='ProductCategory',
-        values='Sales(In ThousandDollars)'
+        index=["Year", "Month"],
+        columns="ProductCategory",
+        values="Sales(In ThousandDollars)",
     )
 
     training = pivoted_data.copy()
-    for col in ['MenClothing', 'OtherClothing', 'WomenClothing']:
-        training[col] = training[col].interpolate(method='linear')
+    for col in CLOTHING_CATEGORIES:
+        training[col] = training[col].interpolate(method="linear")
 
-    macro_df = pd.merge(macro_df, training, on=['Year', 'Month'], how='left')
-
-    macro_df = macro_df.drop(columns=["Cotton Monthly Price - US cents per Pound(lbs)", "Average upland harvested(million acres)"])
-
+    macro_df = pd.merge(macro_df, training, on=["Year", "Month"], how="left")
+    macro_df = macro_df.drop(columns=[
+        "Cotton Monthly Price - US cents per Pound(lbs)",
+        "Average upland harvested(million acres)",
+    ])
     macro_df["PartyInPower"] = le.fit_transform(macro_df["PartyInPower"])
 
-    holiday_features = holiday_df.groupby(['Year', 'Month']).agg({
-        'DayCategory': 'sum',  
-        'Event': ['count', 'nunique']  
-    }).reset_index()
-
-    holiday_features.columns = ['Year', 'Month', 'holiday_count', 'total_events', 'unique_events']
-
-    merged_df = macro_df.merge(holiday_features, on=['Year', 'Month'], how='left')
-
+    merged_df = macro_df.merge(holiday_flags, on=["Year", "Month"], how="left")
     merged_df = merged_df.drop(columns="AdvertisingExpenses (in Thousand Dollars)")
+    merged_df[HOLIDAY_COLUMNS] = merged_df[HOLIDAY_COLUMNS].fillna(0)
 
-    merged_df[['holiday_count', 'total_events', 'unique_events']] = \
-        merged_df[['holiday_count', 'total_events', 'unique_events']].fillna(0)
+    merged_df["is_q4"] = (merged_df["Month"] >= 10).astype(int)
+    merged_df["is_holiday_season"] = merged_df["Month"].isin([11, 12]).astype(int)
+    merged_df["is_back_to_school"] = merged_df["Month"].isin([8, 9]).astype(int)
+    merged_df["is_spring_shopping"] = merged_df["Month"].isin([3, 4, 5]).astype(int)
+    merged_df["is_summer"] = merged_df["Month"].isin([6, 7, 8]).astype(int)
+    merged_df["is_winter"] = merged_df["Month"].isin([12, 1, 2]).astype(int)
 
-    weather_df = weather_df.sort_values(['Year', 'Month']) 
+    merged_df["Month"] = np.cos(2 * np.pi * merged_df["Month"] / 12)
 
-    # print(merged_df.info())
-    # print(merged_df.duplicated().sum())
-    # print(merged_df.describe())
+    for cat in CLOTHING_CATEGORIES:
+        for lag in LAG_PERIODS:
+            merged_df[f"{cat}_lag{lag}"] = merged_df[cat].shift(lag)
 
-    merged_df["Month"] = np.cos(2 * np.pi * merged_df['Month'] / 12)
+    merged_df["total_clothing"] = merged_df[CLOTHING_CATEGORIES].sum(axis=1)
+    merged_df["women_share"] = merged_df["WomenClothing"] / (merged_df["total_clothing"] + 1e-8)
 
+    merged_df["GDP-ROC"] = merged_df["Monthly Real GDP Index (inMillion$)"].pct_change()
+    merged_df["CPI-ROC"] = merged_df["CPI"].pct_change()
+    merged_df["Unemployment-Change"] = merged_df["unemployment rate"].diff()
 
-    merged_df['WomenClothing_lag1'] = merged_df['WomenClothing'].shift(1)
-    merged_df['WomenClothing_lag3'] = merged_df['WomenClothing'].shift(3)
-    merged_df['WomenClothing_lag12'] = merged_df['WomenClothing'].shift(12)
+    train_df = merged_df[merged_df["WomenClothing"].notna()].copy()
+    test_df = merged_df[merged_df["WomenClothing"].isna()].copy()
 
-    merged_df['MenClothing_lag1'] = merged_df['MenClothing'].shift(1)
-    merged_df['MenClothing_lag3'] = merged_df['MenClothing'].shift(3)
-    merged_df['MenClothing_lag12'] = merged_df['MenClothing'].shift(12)
+    train_df.to_csv("trainin.csv", index=False, encoding="utf-8")
+    test_df.to_csv("testin.csv", index=False, encoding="utf-8")
 
-    merged_df['OtherClothing_lag1'] = merged_df['OtherClothing'].shift(1)
-    merged_df['OtherClothing_lag3'] = merged_df['OtherClothing'].shift(3)
-    merged_df['OtherClothing_lag12'] = merged_df['OtherClothing'].shift(12)
+    return train_df, test_df
 
-    merged_df['RollingMensClothing-3'] = merged_df['MenClothing'].rolling(window=3).mean()
-    merged_df['RollingMensClothing-6'] = merged_df['MenClothing'].rolling(window=6).mean()
-
-    merged_df['RollingWomensClothing-3'] = merged_df['WomenClothing'].rolling(window=3).mean()
-    merged_df['RollingWomensClothing-6'] = merged_df['WomenClothing'].rolling(window=6).mean()
-
-    merged_df['RollingOtherClothing-3'] = merged_df['OtherClothing'].rolling(window=3).mean()
-    merged_df['RollingOtherClothing-6'] = merged_df['OtherClothing'].rolling(window=6).mean()
-
-    merged_df['GDP-ROC'] = merged_df['Monthly Real GDP Index (inMillion$)'].pct_change()
-    merged_df['CPI-ROC'] = merged_df['CPI'].pct_change()
-    merged_df['Unemployment-Change'] = merged_df['unemployment rate'].diff()
-
-
-    train_df = merged_df[merged_df['WomenClothing'].notna()].copy()
-    test_df = merged_df[merged_df['WomenClothing'].isna()].copy()   
-
-    # Visualize your sales data
-    # plt.figure(figsize=(12, 6))
-    # plt.plot(merged_df['Month'], label='Women')
-    # plt.legend()
-    # plt.title('Sales Over Time')
-    # plt.show()
-    
-
-    train_df.to_csv("trainin.csv", index=False, encoding='utf-8')
-    test_df.to_csv("testin.csv", index=False, encoding='utf-8')
 
 preprocess_data()
 
-# Load the training data
-data = pd.read_csv("backend/trainin.csv")
-data = data.sort_values(['Year', 'Month'])
+# =============================================================================
+# STEP 2: FEATURE SELECTION PER CATEGORY
+# =============================================================================
+def get_features_for_category(category, all_columns):
+    """Build the feature list for a given target category."""
 
-# Parameters
-sequence_length = 12
+    shared = [
+        'Month', 'Month_sin', 'Year',
+        'Monthly Real GDP Index (inMillion$)', 'CPI',
+        'unemployment rate', 'PartyInPower',
+        'has_christmas', 'has_thanksgiving', 'has_mothers_day',
+        'has_fathers_day', 'has_valentines', 'has_easter', 'has_new_year',
+        'is_q4', 'is_holiday_season', 'is_back_to_school',
+        'is_spring_shopping', 'is_summer', 'is_winter',
+        'GDP-ROC', 'CPI-ROC', 'Unemployment-Change',
+        'holiday_x_december',
+    ]
 
-# Function to create sequences for regression
-def create_sequences(data, seq_length):
-    X, y = [], []
-    for i in range(len(data) - seq_length):
-        X.append(data[i:i + seq_length])
-        y.append(data[i + seq_length])
-    return np.array(X), np.array(y)
+    # Category-specific lag/rolling/std features
+    cat_specific = [c for c in all_columns if c.startswith(category) and c != category]
 
-# Function to train Linear Regression model for a category
-def train_linear_model(category_data, seq_length=12):
-    scaler = MinMaxScaler(feature_range=(0, 1))
-    scaled_data = scaler.fit_transform(category_data.reshape(-1, 1))
-    
-    X, y = create_sequences(scaled_data.flatten(), seq_length)
-    
-    # Create and train linear regression model
-    model = LinearRegression()
-    model.fit(X, y)
-    
-    return model, scaler
+    # Cross-category signals
+    other_cats = [c for c in ['WomenClothing', 'MenClothing', 'OtherClothing'] if c != category]
+    cross_cat = [f'{oc}_lag1' for oc in other_cats]
 
-# List to store all predictions in order
-all_predictions = []
+    all_features = shared + cat_specific + cross_cat
+    return [f for f in all_features if f in all_columns]
 
-# Train models and make predictions for each category
-for category in ['WomenClothing', 'MenClothing', 'OtherClothing']:
-    print(f"Training model for {category}...")
-    
-    category_series = data[category].dropna().values
-    model, scaler = train_linear_model(category_series, sequence_length)
-    
-    last_sequence = category_series[-sequence_length:]
-    scaled_sequence = scaler.transform(last_sequence.reshape(-1, 1)).flatten()
-    current_sequence = scaled_sequence.copy()
-    
-    # Predict 12 months ahead for this category
-    category_predictions = []
-    for month in range(12):
-        X_pred = current_sequence.reshape(1, -1)
-        pred_scaled = model.predict(X_pred)[0]
-        pred_value = scaler.inverse_transform([[pred_scaled]])[0][0]
-        category_predictions.append(round(pred_value, 2))
-        
-        # Update sequence: remove first element, add prediction
-        current_sequence = np.append(current_sequence[1:], pred_scaled)
-    
-    # Add this category's predictions to the overall list
-    all_predictions.extend(category_predictions)
-    print(f"Completed {category}")
 
-submission = pd.DataFrame({
-    'Year': range(1, 37),  
-    'Sales(In ThousandDollars)': all_predictions
-})
+# =============================================================================
+# STEP 3: ENSEMBLE (sklearn only — no OpenMP needed)
+# =============================================================================
+def train_ensemble(X_train, y_train, X_val, y_val):
+    """Train Ridge + GradientBoosting + RandomForest ensemble."""
+    models = {}
+    val_scores = {}
 
-submission.to_csv("submissions.csv", index=False)
-print("Predictions saved to submissions.csv")
+    # Ridge
+    ridge = Ridge(alpha=100)
+    ridge.fit(X_train, y_train)
+    ridge_mae = mean_absolute_error(y_val, ridge.predict(X_val))
+    models['Ridge'] = ridge
+    val_scores['Ridge'] = ridge_mae
+    print(f"    Ridge  — Val MAE: {ridge_mae:.2f}")
+
+    # Sklearn GradientBoosting
+    gb = GradientBoostingRegressor(
+        n_estimators=300, max_depth=3, learning_rate=0.05,
+        subsample=0.8, min_samples_leaf=5, random_state=42
+    )
+    gb.fit(X_train, y_train)
+    gb_mae = mean_absolute_error(y_val, gb.predict(X_val))
+    models['GradientBoosting'] = gb
+    val_scores['GradientBoosting'] = gb_mae
+    print(f"    GBR    — Val MAE: {gb_mae:.2f}")
+
+    # Random Forest
+    rf = RandomForestRegressor(
+        n_estimators=300, max_depth=5, min_samples_leaf=3, random_state=42
+    )
+    rf.fit(X_train, y_train)
+    rf_mae = mean_absolute_error(y_val, rf.predict(X_val))
+    models['RandomForest'] = rf
+    val_scores['RandomForest'] = rf_mae
+    print(f"    RF     — Val MAE: {rf_mae:.2f}")
+
+    return models, val_scores
+
+
+def ensemble_predict(models, val_scores, X):
+    """Weighted average prediction — inverse MAE weighting."""
+    if not models:
+        return np.zeros(len(X))
+
+    inv_scores = {k: 1.0 / (v + 1e-8) for k, v in val_scores.items()}
+    total = sum(inv_scores.values())
+    weights = {k: v / total for k, v in inv_scores.items()}
+
+    preds = np.zeros(len(X))
+    for name, model in models.items():
+        preds += weights[name] * model.predict(X)
+
+    return preds
+
+
+# =============================================================================
+# STEP 4: CROSS-VALIDATION + FORECASTING
+# =============================================================================
+def run_pipeline():
+    print("=" * 60)
+    print("  PREPROCESSING")
+    print("=" * 60)
+    train_df, test_df = preprocess_data()
+
+    TARGET_COLS = ['WomenClothing', 'MenClothing', 'OtherClothing']
+    all_predictions = []
+
+    for category in TARGET_COLS:
+        print(f"\n{'='*60}")
+        print(f"  {category}")
+        print(f"{'='*60}")
+
+        features = get_features_for_category(category, train_df.columns)
+        print(f"  Using {len(features)} features")
+
+        # Prepare data
+        cols_needed = features + [category]
+        df = train_df[cols_needed].dropna().copy()
+        print(f"  Usable rows: {len(df)}")
+
+        X = df[features].values
+        y = df[category].values
+
+        # ── Time-series cross-validation ──
+        tscv = TimeSeriesSplit(n_splits=3)
+        cv_scores = []
+
+        print(f"\n  Cross-validation (3-fold temporal):")
+        for fold, (train_idx, val_idx) in enumerate(tscv.split(X)):
+            X_tr, X_va = X[train_idx], X[val_idx]
+            y_tr, y_va = y[train_idx], y[val_idx]
+
+            models_fold, scores_fold = train_ensemble(X_tr, y_tr, X_va, y_va)
+            ens_pred = ensemble_predict(models_fold, scores_fold, X_va)
+            fold_mae = mean_absolute_error(y_va, ens_pred)
+            cv_scores.append(fold_mae)
+            print(f"    Fold {fold+1} Ensemble MAE: {fold_mae:.2f}")
+
+        print(f"  Mean CV MAE: {np.mean(cv_scores):.2f} +/- {np.std(cv_scores):.2f}")
+
+        # ── Train final models — last 20% as pseudo-val for weighting ──
+        print(f"\n  Training final models on all {len(X)} rows...")
+        split = int(len(X) * 0.8)
+        final_models, final_scores = train_ensemble(
+            X[:split], y[:split], X[split:], y[split:]
+        )
+
+        # ── Retrain on full data for predictions ──
+        full_models = {}
+        for name, model in final_models.items():
+            clone = model.__class__(**model.get_params())
+            clone.fit(X, y)
+            full_models[name] = clone
+
+        # ── Recursive 12-month forecast ──
+        forecast_rows = test_df.copy() if len(test_df) >= 12 else None
+        category_preds = []
+
+        if forecast_rows is not None and len(forecast_rows) >= 12:
+            for i in range(min(12, len(forecast_rows))):
+                row = forecast_rows.iloc[i:i+1]
+                available_features = [f for f in features if f in row.columns]
+
+                X_pred = row[available_features].copy()
+
+                # Fill NaN lag/rolling features with predictions so far
+                for col in X_pred.columns:
+                    if X_pred[col].isna().any():
+                        if 'lag1' in col and len(category_preds) >= 1:
+                            X_pred[col] = category_preds[-1]
+                        elif 'lag2' in col and len(category_preds) >= 2:
+                            X_pred[col] = category_preds[-2]
+                        elif 'lag3' in col and len(category_preds) >= 3:
+                            X_pred[col] = category_preds[-3]
+                        elif 'lag6' in col and len(category_preds) >= 6:
+                            X_pred[col] = category_preds[-6]
+                        elif 'lag12' in col:
+                            X_pred[col] = train_df[col].dropna().iloc[-1] if col in train_df.columns else 0
+                        else:
+                            X_pred[col] = train_df[col].dropna().iloc[-1] if col in train_df.columns else 0
+
+                # Build final feature array in correct order
+                X_final = np.zeros((1, len(features)))
+                for j, f in enumerate(features):
+                    if f in available_features:
+                        val = X_pred[f].values[0]
+                        X_final[0, j] = val if not np.isnan(val) else 0
+                    elif f in train_df.columns:
+                        last_val = train_df[f].dropna()
+                        X_final[0, j] = last_val.iloc[-1] if len(last_val) > 0 else 0
+
+                pred = ensemble_predict(full_models, final_scores, X_final)[0]
+                pred = max(pred, 0)
+                category_preds.append(round(pred, 2))
+        else:
+            # Fallback: repeat last known features
+            print("  WARNING: No test_df rows, using last-row extrapolation")
+            last_X = X[-1:].copy()
+            for step in range(12):
+                pred = ensemble_predict(full_models, final_scores, last_X)[0]
+                pred = max(pred, 0)
+                category_preds.append(round(pred, 2))
+
+        all_predictions.extend(category_preds)
+        print(f"\n  12-month forecast: {category_preds}")
+
+    # ── Save submission ──
+    submission = pd.DataFrame({
+        'Year': range(1, 37),
+        'Sales(In ThousandDollars)': all_predictions
+    })
+    submission.to_csv("submissions.csv", index=False)
+    print(f"\n{'='*60}")
+    print("SUBMISSION SAVED — submissions.csv")
+    print(f"{'='*60}")
+    print(submission.to_string(index=False))
+
+    return submission
+
+
+if __name__ == "__main__":
+    submission = run_pipeline()
