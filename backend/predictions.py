@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt 
-# import seaborn as sns
+import seaborn as sns
 from sklearn.preprocessing import LabelEncoder
 from sklearn.ensemble import GradientBoostingRegressor, RandomForestRegressor
 from sklearn.linear_model import Ridge
@@ -9,7 +9,6 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error
 from sklearn.model_selection import TimeSeriesSplit
 import warnings
 warnings.filterwarnings('ignore')
-
 
 def create_specific_holiday_flags(original_holidays):
 
@@ -20,7 +19,7 @@ def create_specific_holiday_flags(original_holidays):
         'has_fathers_day': "Father's Day",
         'has_valentines': "Valentine's Day",
         'has_easter': "Easter Sunday",
-        'has_new_year': 'New Year' 
+        'has_new_year': 'New Year', 
     }
     
     all_holiday_flags = None
@@ -66,9 +65,51 @@ def preprocess_data():
     ]
     LAG_PERIODS = [1, 2, 3, 6, 12, 24]
 
+    all_sheets = pd.read_excel("backend/walmart-sales-prediction-hyd-nov-2023/WeatherData.xlsx", sheet_name=None)
+    frames = []
+    for sheet_name, df in all_sheets.items():
+        df["Year"] = int(sheet_name)
+        frames.append(df)
+    weather_df = pd.concat(frames, ignore_index=True)
+    weather_df.columns = weather_df.columns.str.strip()
+    weather_df.columns = weather_df.columns.str.replace('\xa0', ' ')
+    print(weather_df.columns.tolist())
+    weather_df.to_csv("weather_df.csv")
     macro_df = pd.read_excel("backend/walmart-sales-prediction-hyd-nov-2023/macro_economic.xlsx")
     holiday_df = pd.read_excel("backend/walmart-random/Events_holidaysData.xlsx", dtype={"MonthDate": str})
     clothing_data = pd.read_csv("backend/train.csv")
+
+    weather_df = weather_df[~weather_df["Year"].isin(YEARS_TO_REMOVE)]
+    weather_df['has_snow'] = weather_df['WeatherEvent'].str.contains('Snow', na=False).astype(int)
+    weather_df['has_rain'] = weather_df['WeatherEvent'].str.contains('Rain', na=False).astype(int)
+
+    weather_df['Month'] = weather_df['Month'].str.strip().str[:3]  
+    weather_df['Month'] = weather_df['Month'].map(MONTHS_MAPPING)  
+
+    numeric_cols = [
+    'Temp high (°C)', 'Temp avg (°C)', 'Temp low (°C)',
+    'Humidity (%) avg', 'Precip. (mm) sum','Visibility (km) avg','Wind (km/h) avg'
+    ]
+    for col in numeric_cols:
+        weather_df[col] = weather_df[col].replace('T', 0.01)
+        weather_df[col] = pd.to_numeric(weather_df[col], errors='coerce')
+
+    weather_monthly = weather_df.groupby(['Year', 'Month']).agg(
+        temp_avg=('Temp avg (°C)', 'mean'),
+        temp_high_max=('Temp high (°C)', 'max'),
+        temp_low_min=('Temp low (°C)', 'min'),
+        precip_total=('Precip. (mm) sum', 'sum'),
+        humidity_avg=('Humidity (%) avg', 'mean'),
+        snow_days=('has_snow', 'sum'),
+        rain_days=('has_rain', 'sum'),
+        visibility=('Visibility (km) avg', 'mean'),
+        wind=('Wind (km/h) avg', 'mean'),
+    ).reset_index()
+
+    weather_monthly['temp_range'] = weather_monthly['temp_high_max'] - weather_monthly['temp_low_min']
+
+    weather_monthly.to_csv("weathermonthly.csv")
+
 
     holiday_df.insert(loc=2, column="Day", value=holiday_df["MonthDate"].str[2:4].astype(int))
     holiday_df.insert(loc=1, column="Month", value=holiday_df["MonthDate"].str[5:7].astype(int))
@@ -107,10 +148,21 @@ def preprocess_data():
         training[col] = training[col].interpolate(method="linear")
 
     macro_df = pd.merge(macro_df, training, on=["Year", "Month"], how="left")
-    macro_df = macro_df.drop(columns=[
-        "Cotton Monthly Price - US cents per Pound(lbs)",
-        "Average upland harvested(million acres)",
-    ])
+    # macro_df = macro_df.drop(columns=[
+    #     "Cotton Monthly Price - US cents per Pound(lbs)",
+    #     "Average upland harvested(million acres)",
+    #     "PartyInPower",
+    #     "Mill use  (in  480-lb netweright in million bales)",
+    #     "yieldperharvested acre",
+    #     "Production (in  480-lb netweright in million bales)",
+    #     "Average upland planted(million acres)",
+    #     "Earnings or wages  in dollars per hour",
+    #     "Finance Rate on Personal Loans at Commercial Banks, 24 Month Loan",
+    #     "CommercialBankInterestRateonCreditCardPlans",
+    #     "Exports",
+    #     "Change(in%)",
+    # ])
+
     macro_df["PartyInPower"] = le.fit_transform(macro_df["PartyInPower"])
 
     merged_df = macro_df.merge(holiday_flags, on=["Year", "Month"], how="left")
@@ -124,7 +176,10 @@ def preprocess_data():
     merged_df["is_summer"] = merged_df["Month"].isin([6, 7, 8]).astype(int)
     merged_df["is_winter"] = merged_df["Month"].isin([12, 1, 2]).astype(int)
 
-    merged_df["Month"] = np.cos(2 * np.pi * merged_df["Month"] / 12)
+    merged_df = merged_df.merge(weather_monthly, on=['Year', 'Month'], how='left')
+
+    merged_df["Month_sin"] = np.sin(2 * np.pi * merged_df["Month"] / 12)
+    merged_df["Month_cos"] = np.cos(2 * np.pi * merged_df["Month"] / 12)
 
     for cat in CLOTHING_CATEGORIES:
         for lag in LAG_PERIODS:
@@ -132,6 +187,8 @@ def preprocess_data():
 
     merged_df["total_clothing"] = merged_df[CLOTHING_CATEGORIES].sum(axis=1)
     merged_df["women_share"] = merged_df["WomenClothing"] / (merged_df["total_clothing"] + 1e-8)
+    merged_df["other_share"] = merged_df["OtherClothing"] / (merged_df["total_clothing"] + 1e-8)
+    merged_df["men_share"] = merged_df["MenClothing"] / (merged_df["total_clothing"] + 1e-8)
 
     merged_df["GDP-ROC"] = merged_df["Monthly Real GDP Index (inMillion$)"].pct_change()
     merged_df["CPI-ROC"] = merged_df["CPI"].pct_change()
@@ -140,8 +197,18 @@ def preprocess_data():
     train_df = merged_df[merged_df["WomenClothing"].notna()].copy()
     test_df = merged_df[merged_df["WomenClothing"].isna()].copy()
 
-    train_df.to_csv("trainin.csv", index=False, encoding="utf-8")
-    test_df.to_csv("testin.csv", index=False, encoding="utf-8")
+    # train_corr = train_df.corr()
+
+    # target_features = ['MenClothing', 'OtherClothing', 'WomenClothing']
+    # filtered_corr = train_corr.loc[target_features]
+
+    # plt.figure(figsize=(20, 10))
+    # sns.heatmap(filtered_corr, annot=False, linewidths=0.5)
+
+    # plt.show()
+
+    train_df.to_csv("trainin.csv", index=True, encoding="utf-8")
+    test_df.to_csv("testin.csv", index=True, encoding="utf-8")
 
     return train_df, test_df
 
@@ -155,25 +222,32 @@ def get_features_for_category(category, all_columns):
     """Build the feature list for a given target category."""
 
     shared = [
-        'Month', 'Month_sin', 'Year',
-        'Monthly Real GDP Index (inMillion$)', 'CPI',
-        'unemployment rate', 'PartyInPower',
-        'has_christmas', 'has_thanksgiving', 'has_mothers_day',
-        'has_fathers_day', 'has_valentines', 'has_easter', 'has_new_year',
-        'is_q4', 'is_holiday_season', 'is_back_to_school',
-        'is_spring_shopping', 'is_summer', 'is_winter',
-        'GDP-ROC', 'CPI-ROC', 'Unemployment-Change',
-        'holiday_x_december',
-    ]
-
-    # Category-specific lag/rolling/std features
-    cat_specific = [c for c in all_columns if c.startswith(category) and c != category]
+    'Month_sin', 'Month_cos', 'Year',
+    'Monthly Real GDP Index (inMillion$)', 'CPI',
+    'unemployment rate',
+    'has_christmas', 'has_thanksgiving', 'has_mothers_day',
+    'has_fathers_day', 'has_valentines', 'has_easter', 'has_new_year',
+    'is_q4', 'is_holiday_season', 'is_back_to_school',
+    'is_spring_shopping', 'is_summer', 'is_winter',
+    'GDP-ROC', 'CPI-ROC', 'Unemployment-Change',
+    'temp_avg', 'temp_high_max', 'temp_low_min', 'temp_range',
+    'precip_total', 'humidity_avg', 'snow_days', 'rain_days',
+    'visibility', 'wind',"Cotton Monthly Price - US cents per Pound(lbs)",
+        "Average upland harvested(million acres)",
+        "Production (in  480-lb netweright in million bales)",
+        "Average upland planted(million acres)",
+        "Earnings or wages  in dollars per hour",
+        "Finance Rate on Personal Loans at Commercial Banks, 24 Month Loan",
+        "CommercialBankInterestRateonCreditCardPlans",
+        "Exports",
+        "Change(in%)",
+]
 
     # Cross-category signals
     other_cats = [c for c in ['WomenClothing', 'MenClothing', 'OtherClothing'] if c != category]
     cross_cat = [f'{oc}_lag1' for oc in other_cats]
 
-    all_features = shared + cat_specific + cross_cat
+    all_features = shared + cross_cat
     return [f for f in all_features if f in all_columns]
 
 
@@ -186,7 +260,7 @@ def train_ensemble(X_train, y_train, X_val, y_val):
     val_scores = {}
 
     # Ridge
-    ridge = Ridge(alpha=100)
+    ridge = Ridge(alpha=6)
     ridge.fit(X_train, y_train)
     ridge_mae = mean_absolute_error(y_val, ridge.predict(X_val))
     models['Ridge'] = ridge
@@ -195,8 +269,8 @@ def train_ensemble(X_train, y_train, X_val, y_val):
 
     # Sklearn GradientBoosting
     gb = GradientBoostingRegressor(
-        n_estimators=300, max_depth=3, learning_rate=0.05,
-        subsample=0.8, min_samples_leaf=5, random_state=42
+        n_estimators=300, max_depth=2, learning_rate=0.01,
+        subsample=0.8, min_samples_leaf=3, random_state=42
     )
     gb.fit(X_train, y_train)
     gb_mae = mean_absolute_error(y_val, gb.predict(X_val))
@@ -206,7 +280,7 @@ def train_ensemble(X_train, y_train, X_val, y_val):
 
     # Random Forest
     rf = RandomForestRegressor(
-        n_estimators=300, max_depth=5, min_samples_leaf=3, random_state=42
+        n_estimators=300, max_depth=3, min_samples_leaf=3, random_state=42
     )
     rf.fit(X_train, y_train)
     rf_mae = mean_absolute_error(y_val, rf.predict(X_val))
