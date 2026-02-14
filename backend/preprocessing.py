@@ -6,18 +6,11 @@ from sklearn.preprocessing import LabelEncoder
 
 """
 TODO: 
- - [ ]  fill NAN values in the clothing data so that it isn't a problem BEFORE merging with holiday data
+ - [x]  fill NAN values in the clothing data so that it isn't a problem BEFORE merging with holiday data
  - [x]  add valentines to the womens clothing thingy
 
 """
 
-
-"""
-
-
-
-
-"""
 le = LabelEncoder()
 
 YEARS_TO_REMOVE = [2015, 2016]
