@@ -9,7 +9,9 @@ TODO:
  - [x]  fill NAN values in the clothing data so that it isn't a problem BEFORE merging with holiday data
  - [x]  add valentines to the womens clothing thingy
 
+
 """
+
 
 le = LabelEncoder()
 
