@@ -1,0 +1,299 @@
+.insights {
+  min-height: 100vh;
+  background-color: #f9fafb;
+}
+
+.insights-container {
+  margin-left: 256px;
+  padding: 32px;
+}
+
+.insights-header {
+  margin-bottom: 32px;
+}
+
+.insights-title {
+  font-size: 30px;
+  font-weight: bold;
+  color: #111827;
+  margin: 0 0 8px 0;
+}
+
+.insights-subtitle {
+  color: #4b5563;
+  margin: 0;
+}
+
+.insight-card {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.insight-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.insight-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.insight-icon.blue {
+  background-color: #dbeafe;
+}
+
+.insight-icon.green {
+  background-color: #dcfce7;
+}
+
+.insight-icon.orange {
+  background-color: #ffedd5;
+}
+
+.insight-icon.emerald {
+  background-color: #d1fae5;
+}
+
+.insight-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.insight-icon.blue svg {
+  color: #2563eb;
+}
+
+.insight-icon.green svg {
+  color: #16a34a;
+}
+
+.insight-icon.orange svg {
+  color: #ea580c;
+}
+
+.insight-icon.emerald svg {
+  color: #059669;
+}
+
+.insight-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.insight-description {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 4px 0 0 0;
+}
+
+.insight-points {
+  margin-top: 24px;
+}
+
+.insight-point {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.point-number {
+  width: 24px;
+  height: 24px;
+  background-color: #eff6ff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.point-number span {
+  color: #2563eb;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.insight-point p {
+  color: #374151;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.month-grid {
+  display: grid;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.month-card {
+  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid;
+}
+
+.month-card.green {
+  background-color: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.month-card.orange {
+  background-color: #fff7ed;
+  border-color: #fed7aa;
+}
+
+.month-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.month-header svg {
+  width: 16px;
+  height: 16px;
+}
+
+.month-card.green .month-header svg {
+  color: #16a34a;
+}
+
+.month-card.orange .month-header svg {
+  color: #ea580c;
+}
+
+.month-name {
+  font-weight: 600;
+  margin: 0;
+}
+
+.month-card.green .month-name {
+  color: #052e16;
+}
+
+.month-card.orange .month-name {
+  color: #7c2d12;
+}
+
+.month-reason {
+  font-size: 14px;
+  margin: 0;
+}
+
+.month-card.green .month-reason {
+  color: #166534;
+}
+
+.month-card.orange .month-reason {
+  color: #9a3412;
+}
+
+.action-box {
+  margin-top: 24px;
+  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid;
+}
+
+.action-box.green {
+  background-color: #dcfce7;
+  border-color: #86efac;
+}
+
+.action-box.orange {
+  background-color: #ffedd5;
+  border-color: #fdba74;
+}
+
+.action-box p {
+  font-size: 14px;
+  margin: 0;
+}
+
+.action-box.green p {
+  color: #052e16;
+}
+
+.action-box.orange p {
+  color: #7c2d12;
+}
+
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.benefit-card {
+  background-color: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.benefit-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.benefit-content svg {
+  width: 20px;
+  height: 20px;
+  color: #059669;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.benefit-title {
+  font-weight: 600;
+  color: #064e3b;
+  margin: 0 0 4px 0;
+}
+
+.benefit-description {
+  font-size: 14px;
+  color: #065f46;
+  margin: 0;
+}
+
+.bottom-line {
+  margin-top: 24px;
+  background-color: #d1fae5;
+  border: 2px solid #6ee7b7;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.bottom-line h3 {
+  font-weight: 600;
+  color: #064e3b;
+  margin: 0 0 8px 0;
+}
+
+.bottom-line p {
+  color: #064e3b;
+  margin: 0;
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .benefits-grid {
+    grid-template-columns: 1fr;
+  }
+}
