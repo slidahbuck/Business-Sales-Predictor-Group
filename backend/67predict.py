@@ -52,7 +52,7 @@ X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42
 )
 
-history = model.fit(X_train, y_train, epochs=200)
+history = model.fit(X_train, y_train, epochs=2000)
 
 pred_women = model.predict(women_test[features]).ravel()
 
@@ -67,7 +67,7 @@ X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42
 )
 
-history = model.fit(X_train, y_train, epochs=200)
+history = model.fit(X_train, y_train, epochs=2000)
 
 pred_men = model.predict(men_test[features]).ravel()
 
@@ -81,7 +81,7 @@ X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42
 )
 
-history = model.fit(X_train, y_train, epochs=200)
+history = model.fit(X_train, y_train, epochs=2000)
 
 pred_other = model.predict(other_test[features]).ravel()
 
