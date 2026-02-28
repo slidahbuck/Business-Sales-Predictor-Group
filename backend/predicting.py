@@ -210,6 +210,14 @@ def forecast_category(category, train_path, test_path):
         clone = model.__class__(**model.get_params())
         clone.fit(X, y)
         full_models[name] = clone
+        
+    import joblib
+
+    for name, model in full_models.items():
+        filename = f"{category}_{name}.pkl"
+        joblib.dump(model, filename)
+
+joblib.dump(features, f"{category}_features.pkl")
 
     # ── Recursive 12-month forecast ──
     category_preds = []
@@ -289,13 +297,7 @@ def main():
 
     return submission
 
-import joblib
 
-for name, model in full_models.items():
-    filename = f"{category}_{name}.pkl"
-    joblib.dump(model, filename)
-
-joblib.dump(features, f"{category}_features.pkl")
 
 print(f"  Saved models + features for {category}")
 if __name__ == "__main__":
