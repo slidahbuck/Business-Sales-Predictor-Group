@@ -36,7 +36,7 @@ model = tf.keras.models.Sequential([
     tf.keras.layers.Dense(1)
 ])
 
-lr = 0.01
+lr = 0.001
 
 model.compile(
     loss='mse',
