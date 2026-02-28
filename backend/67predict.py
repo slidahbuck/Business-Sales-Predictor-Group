@@ -30,14 +30,13 @@ features = ['Year','Month','Month_sin','Month_cos']
 
 
 model = tf.keras.models.Sequential([
-    tf.keras.layers.Dense(670, activation='relu', input_shape=[4]),
-    tf.keras.layers.Dense(410, activation='relu'),
-    tf.keras.layers.Dense(69, activation='relu'),
-    tf.keras.layers.Dense(69, activation='relu'),
+    tf.keras.layers.Dense(67, activation='relu', input_shape=[4]),
+    tf.keras.layers.Dense(140, activation='relu'),
+    tf.keras.layers.Dense(67, activation='relu'),
     tf.keras.layers.Dense(1)
 ])
 
-lr = 0.005
+lr = 0.0067
 
 model.compile(
     loss='mse',

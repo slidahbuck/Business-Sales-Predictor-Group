@@ -289,6 +289,15 @@ def main():
 
     return submission
 
+import joblib
 
+for name, model in full_models.items():
+    filename = f"{category}_{name}.pkl"
+    joblib.dump(model, filename)
+
+joblib.dump(features, f"{category}_features.pkl")
+
+print(f"  Saved models + features for {category}")
 if __name__ == "__main__":
     main()
+
