@@ -30,13 +30,14 @@ features = ['Year','Month','Month_sin','Month_cos']
 
 
 model = tf.keras.models.Sequential([
-    tf.keras.layers.Dense(67, activation='relu', input_shape=[4]),
+    tf.keras.layers.Dense(670, activation='relu', input_shape=[4]),
+    tf.keras.layers.Dense(410, activation='relu'),
     tf.keras.layers.Dense(69, activation='relu'),
-    tf.keras.layers.Dense(67, activation='relu'),
+    tf.keras.layers.Dense(69, activation='relu'),
     tf.keras.layers.Dense(1)
 ])
 
-lr = 0.001
+lr = 0.005
 
 model.compile(
     loss='mse',
@@ -52,7 +53,7 @@ X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42
 )
 
-history = model.fit(X_train, y_train, epochs=20000)
+history = model.fit(X_train, y_train, epochs=6700)
 
 pred_women = model.predict(women_test[features]).ravel()
 
@@ -67,7 +68,7 @@ X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42
 )
 
-history = model.fit(X_train, y_train, epochs=20000)
+history = model.fit(X_train, y_train, epochs=6700)
 
 pred_men = model.predict(men_test[features]).ravel()
 
@@ -81,7 +82,7 @@ X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42
 )
 
-history = model.fit(X_train, y_train, epochs=20000)
+history = model.fit(X_train, y_train, epochs=6700)
 
 pred_other = model.predict(other_test[features]).ravel()
 
