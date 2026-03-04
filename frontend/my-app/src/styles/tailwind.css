@@ -1,6 +1,0 @@
-  /* Tailwind entry file */
-  @import 'tw-animate-css';
-  
-  @tailwind base;
-  @tailwind components;
-  @tailwind utilities;

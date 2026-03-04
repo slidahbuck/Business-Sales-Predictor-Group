@@ -1,7 +1,10 @@
 import { useState } from 'react';
+import './App.css';
+import crine from '../src/son-crine.png';
 
 // Mock data
 const monthlyForecastData = {
+
   "Women's Clothing": [
     { month: 'Jan', predicted: 145, yoy: 3.5, action: 'maintain' },
     { month: 'Feb', predicted: 168, yoy: 8.2, action: 'increase' },
@@ -49,16 +52,16 @@ const monthlyForecastData = {
 export default function App() {
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [selectedCategory, setSelectedCategory] = useState("Women's Clothing");
-  const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
+  const [selectedMonth, setSelectedMonth] = useState(null);
 
   const categories = ["Women's Clothing", "Men's Clothing", "Other Clothing"];
-  const currentData = monthlyForecastData[selectedCategory as keyof typeof monthlyForecastData];
+  const currentData = monthlyForecastData[selectedCategory];
   
   const maxValue = Math.max(...currentData.map(d => d.predicted));
   const highestMonth = currentData.reduce((max, item) => item.predicted > max.predicted ? item : max);
   const lowestMonth = currentData.reduce((min, item) => item.predicted < min.predicted ? item : min);
 
-  const getCategoryBreakdown = (monthIndex: number) => {
+  const getCategoryBreakdown = (monthIndex) => {
     return [
       { category: "Women's Clothing", sales: monthlyForecastData["Women's Clothing"][monthIndex].predicted },
       { category: "Men's Clothing", sales: monthlyForecastData["Men's Clothing"][monthIndex].predicted },
@@ -66,7 +69,7 @@ export default function App() {
     ];
   };
 
-  const getActionText = (action: string) => {
+  const getActionText = (action) => {
     switch (action) {
       case 'increase': return 'Increase Stock';
       case 'reduce': return 'Reduce Stock';
@@ -74,13 +77,13 @@ export default function App() {
     }
   };
 
-  const getYoyIcon = (yoy: number) => {
+  const getYoyIcon = (yoy) => {
     if (yoy > 5) return '↗';
     if (yoy < -2) return '↘';
     return '→';
   };
 
-  const getYoyClass = (yoy: number) => {
+  const getYoyClass = (yoy) => {
     if (yoy > 0) return 'yoy-positive';
     if (yoy < 0) return 'yoy-negative';
     return 'yoy-neutral';
@@ -92,7 +95,9 @@ export default function App() {
       <aside className="sidebar">
         <div className="sidebar-header">
           <div className="logo">
-            <div className="logo-icon">W</div>
+            {/* <div className="logo-icon">W</div> */}
+            <img src={crine} width="67" height="67" alt="me"></img>
+            {/* <img src={crine} width="200" height="267" alt="Son Crine" /> */}
             <div className="logo-text">
               <h1>Walmart</h1>
               <p>Sales Forecast</p>
