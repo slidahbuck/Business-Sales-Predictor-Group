@@ -59,6 +59,14 @@ pred_women = model.predict(women_test[features]).ravel()
 error = y_test.values - model.predict(X_test).ravel()
 print("Women:", np.abs(error).mean())
 
+women_model = tf.keras.models.clone_model(model)
+women_model.compile(loss='mse',
+                    optimizer=tf.keras.optimizers.Adam(learning_rate=lr),
+                    metrics=['mae'])
+
+women_model.fit(X_train, y_train, epochs=6700)
+
+women_model.save("women_model.keras")
 
 X = men_train[features]
 y = men_train['MenClothing']
@@ -73,6 +81,14 @@ pred_men = model.predict(men_test[features]).ravel()
 
 error = y_test.values - model.predict(X_test).ravel()
 print("Men:", np.abs(error).mean())
+men_model = tf.keras.models.clone_model(model)
+men_model.compile(loss='mse',
+                  optimizer=tf.keras.optimizers.Adam(learning_rate=lr),
+                  metrics=['mae'])
+
+men_model.fit(X_train, y_train, epochs=6700)
+
+men_model.save("men_model.keras")
 
 X = other_train[features]
 y = other_train['OtherClothing']
@@ -88,6 +104,14 @@ pred_other = model.predict(other_test[features]).ravel()
 error = y_test.values - model.predict(X_test).ravel()
 print("Other:", np.abs(error).mean())
 
+other_model = tf.keras.models.clone_model(model)
+other_model.compile(loss='mse',
+                    optimizer=tf.keras.optimizers.Adam(learning_rate=lr),
+                    metrics=['mae'])
+
+other_model.fit(X_train, y_train, epochs=6700)
+
+other_model.save("other_model.keras")
 
 all_predictions = []
 
