@@ -52,7 +52,7 @@ X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42
 )
 
-history = model.fit(X_train, y_train, epochs=6700)
+history = model.fit(X_train, y_train, epochs=1000)
 
 pred_women = model.predict(women_test[features]).ravel()
 
@@ -64,7 +64,7 @@ women_model.compile(loss='mse',
                     optimizer=tf.keras.optimizers.Adam(learning_rate=lr),
                     metrics=['mae'])
 
-women_model.fit(X_train, y_train, epochs=6700)
+women_model.fit(X_train, y_train, epochs=1000)
 
 women_model.save("women_model.keras")
 
@@ -75,7 +75,7 @@ X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42
 )
 
-history = model.fit(X_train, y_train, epochs=6700)
+history = model.fit(X_train, y_train, epochs=1000)
 
 pred_men = model.predict(men_test[features]).ravel()
 
@@ -86,7 +86,7 @@ men_model.compile(loss='mse',
                   optimizer=tf.keras.optimizers.Adam(learning_rate=lr),
                   metrics=['mae'])
 
-men_model.fit(X_train, y_train, epochs=6700)
+men_model.fit(X_train, y_train, epochs=1000)
 
 men_model.save("men_model.keras")
 
@@ -97,7 +97,7 @@ X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42
 )
 
-history = model.fit(X_train, y_train, epochs=6700)
+history = model.fit(X_train, y_train, epochs=1000)
 
 pred_other = model.predict(other_test[features]).ravel()
 
@@ -109,7 +109,7 @@ other_model.compile(loss='mse',
                     optimizer=tf.keras.optimizers.Adam(learning_rate=lr),
                     metrics=['mae'])
 
-other_model.fit(X_train, y_train, epochs=6700)
+other_model.fit(X_train, y_train, epochs=1000)
 
 other_model.save("other_model.keras")
 
