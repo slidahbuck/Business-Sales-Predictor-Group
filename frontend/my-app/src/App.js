@@ -1,10 +1,8 @@
 import { useState } from 'react';
 import './App.css';
-import crine from '../src/son-crine.png';
 
 // Mock data
 const monthlyForecastData = {
-
   "Women's Clothing": [
     { month: 'Jan', predicted: 145, yoy: 3.5, action: 'maintain' },
     { month: 'Feb', predicted: 168, yoy: 8.2, action: 'increase' },
@@ -53,6 +51,9 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [selectedCategory, setSelectedCategory] = useState("Women's Clothing");
   const [selectedMonth, setSelectedMonth] = useState(null);
+  const [predictionMonth, setPredictionMonth] = useState('');
+  const [predictionYear, setPredictionYear] = useState('');
+  const [predictionResults, setPredictionResults] = useState(null);
 
   const categories = ["Women's Clothing", "Men's Clothing", "Other Clothing"];
   const currentData = monthlyForecastData[selectedCategory];
@@ -60,6 +61,45 @@ export default function App() {
   const maxValue = Math.max(...currentData.map(d => d.predicted));
   const highestMonth = currentData.reduce((max, item) => item.predicted > max.predicted ? item : max);
   const lowestMonth = currentData.reduce((min, item) => item.predicted < min.predicted ? item : min);
+
+  const months = ['January', 'February', 'March', 'April', 'May', 'June', 
+                  'July', 'August', 'September', 'October', 'November', 'December'];
+
+  const handlePredictSales = () => {
+    if (!predictionMonth || !predictionYear) return;
+    
+    const monthIndex = months.indexOf(predictionMonth);
+    const womensSales = monthlyForecastData["Women's Clothing"][monthIndex].predicted;
+    const mensSales = monthlyForecastData["Men's Clothing"][monthIndex].predicted;
+    const otherSales = monthlyForecastData["Other Clothing"][monthIndex].predicted;
+    const totalSales = womensSales + mensSales + otherSales;
+
+    setPredictionResults({
+      month: predictionMonth,
+      year: predictionYear,
+      total: totalSales,
+      categories: [
+        {
+          name: "Women's Clothing",
+          sales: womensSales,
+          yoy: monthlyForecastData["Women's Clothing"][monthIndex].yoy,
+          action: monthlyForecastData["Women's Clothing"][monthIndex].action
+        },
+        {
+          name: "Men's Clothing",
+          sales: mensSales,
+          yoy: monthlyForecastData["Men's Clothing"][monthIndex].yoy,
+          action: monthlyForecastData["Men's Clothing"][monthIndex].action
+        },
+        {
+          name: "Other Clothing",
+          sales: otherSales,
+          yoy: monthlyForecastData["Other Clothing"][monthIndex].yoy,
+          action: monthlyForecastData["Other Clothing"][monthIndex].action
+        }
+      ]
+    });
+  };
 
   const getCategoryBreakdown = (monthIndex) => {
     return [
@@ -95,9 +135,7 @@ export default function App() {
       <aside className="sidebar">
         <div className="sidebar-header">
           <div className="logo">
-            {/* <div className="logo-icon">W</div> */}
-            <img src={crine} width="67" height="67" alt="me"></img>
-            {/* <img src={crine} width="200" height="267" alt="Son Crine" /> */}
+            <div className="logo-icon">W</div>
             <div className="logo-text">
               <h1>Walmart</h1>
               <p>Sales Forecast</p>
@@ -140,6 +178,89 @@ export default function App() {
             <div className="page-header">
               <h1>Sales Forecast Dashboard</h1>
               <p>Predict demand and optimize inventory to reduce waste</p>
+            </div>
+
+            {/* Prediction Section */}
+            <div className="prediction-section">
+              <div className="prediction-form">
+                <div className="form-group">
+                  <label>Select Month</label>
+                  <select 
+                    className="input-field"
+                    value={predictionMonth}
+                    onChange={(e) => setPredictionMonth(e.target.value)}
+                  >
+                    <option value="">Choose a month...</option>
+                    {months.map(month => (
+                      <option key={month} value={month}>{month}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Year</label>
+                  <input 
+                    type="number"
+                    className="input-field"
+                    placeholder="e.g., 2026"
+                    value={predictionYear}
+                    onChange={(e) => setPredictionYear(e.target.value)}
+                    min="2024"
+                    max="2030"
+                  />
+                </div>
+
+                <button 
+                  className="predict-button"
+                  onClick={handlePredictSales}
+                  disabled={!predictionMonth || !predictionYear}
+                >
+                  Predict Sales
+                </button>
+              </div>
+
+              {predictionResults && (
+                <div className="prediction-results">
+                  <div className="prediction-header">
+                    <h3>Prediction for {predictionResults.month} {predictionResults.year}</h3>
+                    <button 
+                      className="close-button"
+                      onClick={() => setPredictionResults(null)}
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  <div className="prediction-summary">
+                    <div className="total-prediction">
+                      <p className="total-label">Total Predicted Sales</p>
+                      <p className="total-value">${predictionResults.total}K</p>
+                    </div>
+                  </div>
+
+                  <div className="prediction-breakdown">
+                    {predictionResults.categories.map((cat) => (
+                      <div key={cat.name} className="prediction-item">
+                        <div className="prediction-item-header">
+                          <span className="category-name">{cat.name}</span>
+                          <span className="category-sales">${cat.sales}K</span>
+                        </div>
+                        <div className="prediction-item-details">
+                          <div className="yoy-cell">
+                            <span className={getYoyClass(cat.yoy)}>{getYoyIcon(cat.yoy)}</span>
+                            <span className={getYoyClass(cat.yoy)}>
+                              {cat.yoy > 0 ? '+' : ''}{cat.yoy}% YoY
+                            </span>
+                          </div>
+                          <span className={`action-badge ${cat.action}`}>
+                            {getActionText(cat.action)}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Category Selector */}
