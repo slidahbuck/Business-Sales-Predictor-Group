@@ -62,13 +62,34 @@ export default function App() {
   const highestMonth = currentData.reduce((max, item) => item.predicted > max.predicted ? item : max);
   const lowestMonth = currentData.reduce((min, item) => item.predicted < min.predicted ? item : min);
 
-  const months = ['January', 'February', 'March', 'April', 'May', 'June', 
-                  'July', 'August', 'September', 'October', 'November', 'December'];
+  const months = [1,2,3,4,5,6,7,8,9,10,11,12];
+
+  const fetchPrediction = async () => {
+    try {
+      const res = await fetch(`http://localhost:4000/api/walmart/predict?year=${predictionYear}&month=${predictionMonth}`);
+      const data = await res.json();
+      if (data.success) {
+        const total = Math.round((data.WomenClothing + data.MenClothing + data.OtherClothing) * 100) / 100;
+        setPredictionResults({
+          month: predictionMonth,
+          year: predictionYear,
+          total,
+          categories: [
+            { name: "Women's Clothing", sales: data.WomenClothing },
+            { name: "Men's Clothing", sales: data.MenClothing },
+            { name: "Other Clothing", sales: data.OtherClothing },
+          ]
+        });
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const handlePredictSales = () => {
     if (!predictionMonth || !predictionYear) return;
     
-    const monthIndex = months.indexOf(predictionMonth);
+    const monthIndex = months.indexOf(Number(predictionMonth));
     const womensSales = monthlyForecastData["Women's Clothing"][monthIndex].predicted;
     const mensSales = monthlyForecastData["Men's Clothing"][monthIndex].predicted;
     const otherSales = monthlyForecastData["Other Clothing"][monthIndex].predicted;
@@ -210,9 +231,9 @@ export default function App() {
                   />
                 </div>
 
-                <button 
+                <button
                   className="predict-button"
-                  onClick={handlePredictSales}
+                  onClick={fetchPrediction}
                   disabled={!predictionMonth || !predictionYear}
                 >
                   Predict Sales
@@ -245,17 +266,23 @@ export default function App() {
                           <span className="category-name">{cat.name}</span>
                           <span className="category-sales">${cat.sales}K</span>
                         </div>
-                        <div className="prediction-item-details">
-                          <div className="yoy-cell">
-                            <span className={getYoyClass(cat.yoy)}>{getYoyIcon(cat.yoy)}</span>
-                            <span className={getYoyClass(cat.yoy)}>
-                              {cat.yoy > 0 ? '+' : ''}{cat.yoy}% YoY
-                            </span>
+                        {(cat.yoy != null || cat.action) && (
+                          <div className="prediction-item-details">
+                            {cat.yoy != null && (
+                              <div className="yoy-cell">
+                                <span className={getYoyClass(cat.yoy)}>{getYoyIcon(cat.yoy)}</span>
+                                <span className={getYoyClass(cat.yoy)}>
+                                  {cat.yoy > 0 ? '+' : ''}{cat.yoy}% YoY
+                                </span>
+                              </div>
+                            )}
+                            {cat.action && (
+                              <span className={`action-badge ${cat.action}`}>
+                                {getActionText(cat.action)}
+                              </span>
+                            )}
                           </div>
-                          <span className={`action-badge ${cat.action}`}>
-                            {getActionText(cat.action)}
-                          </span>
-                        </div>
+                        )}
                       </div>
                     ))}
                   </div>
