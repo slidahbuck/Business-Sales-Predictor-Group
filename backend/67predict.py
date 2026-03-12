@@ -59,14 +59,20 @@ pred_women = model.predict(women_test[features]).ravel()
 error = y_test.values - model.predict(X_test).ravel()
 print("Women:", np.abs(error).mean())
 
-women_model = tf.keras.models.clone_model(model)
-women_model.compile(loss='mse',
-                    optimizer=tf.keras.optimizers.Adam(learning_rate=lr),
-                    metrics=['mae'])
+model.save("women_model.keras")
 
-women_model.fit(X_train, y_train, epochs=1000)
+model = tf.keras.models.Sequential([
+    tf.keras.layers.Dense(67, activation='relu', input_shape=[4]),
+    tf.keras.layers.Dense(140, activation='relu'),
+    tf.keras.layers.Dense(67, activation='relu'),
+    tf.keras.layers.Dense(1)
+])
 
-women_model.save("women_model.keras")
+model.compile(
+    loss='mse',
+    optimizer=tf.keras.optimizers.Adam(learning_rate=lr),
+    metrics=['mae']
+)
 
 X = men_train[features]
 y = men_train['MenClothing']
@@ -81,14 +87,21 @@ pred_men = model.predict(men_test[features]).ravel()
 
 error = y_test.values - model.predict(X_test).ravel()
 print("Men:", np.abs(error).mean())
-men_model = tf.keras.models.clone_model(model)
-men_model.compile(loss='mse',
-                  optimizer=tf.keras.optimizers.Adam(learning_rate=lr),
-                  metrics=['mae'])
 
-men_model.fit(X_train, y_train, epochs=1000)
+model.save("men_model.keras")
 
-men_model.save("men_model.keras")
+model = tf.keras.models.Sequential([
+    tf.keras.layers.Dense(67, activation='relu', input_shape=[4]),
+    tf.keras.layers.Dense(140, activation='relu'),
+    tf.keras.layers.Dense(67, activation='relu'),
+    tf.keras.layers.Dense(1)
+])
+
+model.compile(
+    loss='mse',
+    optimizer=tf.keras.optimizers.Adam(learning_rate=lr),
+    metrics=['mae']
+)
 
 X = other_train[features]
 y = other_train['OtherClothing']
@@ -104,15 +117,7 @@ pred_other = model.predict(other_test[features]).ravel()
 error = y_test.values - model.predict(X_test).ravel()
 print("Other:", np.abs(error).mean())
 
-other_model = tf.keras.models.clone_model(model)
-other_model.compile(loss='mse',
-                    optimizer=tf.keras.optimizers.Adam(learning_rate=lr),
-                    metrics=['mae'])
-
-other_model.fit(X_train, y_train, epochs=1000)
-
-other_model.save("other_model.keras")
-
+model.save("other_model.keras")
 all_predictions = []
 
 for i in range(12):
