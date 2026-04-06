@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="3300b219-cfbd-45ea-a595-6b1e4c006fb4" name="Changes" comment="gdp now included and updated.">
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/Business-Sales-Predictor-Group.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/67predict.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/api.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/holiday_df.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/men_test.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/men_train.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/other_test.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/other_train.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/quarterly_gdp.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/submission.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/submission_tf.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/submissions.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/walmart-random/Events_HolidaysData.xlsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/walmart-random/Kaggle_Submission_Format.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/walmart-random/WeatherData.xlsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/walmart-random/attributes_description.xlsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/walmart-random/submission.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/walmart-sales-prediction-hyd-nov-2023/WeatherData.xlsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/walmart-sales-prediction-hyd-nov-2023/macro_economic.xlsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/walmart-sales-prediction-hyd-nov-2023/train.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/women_test.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/women_train.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/my-app/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/my-app/public/logo192.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/my-app/public/logo512.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/my-app/src/App.test.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/my-app/src/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/my-app/src/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/my-app/src/logo.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/my-app/src/reportWebVitals.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/my-app/src/setupTests.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/my-app/src/son-crine.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/idk.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/men_model.keras" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/men_test.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/men_train.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/notes.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/other_model.keras" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/other_test.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/other_train.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/submission.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/women_model.keras" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/women_test.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/women_train.csv" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;slidahbuck&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/slidahbuck/Business-Sales-Predictor-Group.git&quot;,
+    &quot;accountId&quot;: &quot;db21e7a5-fad7-4164-88a2-7410ec8fd253&quot;
+  }
+}</component>
+  <component name="McpProjectServerCommands">
+    <commands />
+    <urls />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 1
+}</component>
+  <component name="ProjectId" id="3Bg66rH9p0xT1OM9m6I0LpsUBdj" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "ai.playground.ignore.import.keys.banner.in.settings": "true",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "git-widget-placeholder": "main",
+    "junie.onboarding.icon.badge.shown": "true",
+    "last_opened_file_path": "/Users/aidenbuck/Desktop/Business-Sales-Predictor-Group",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "to.speed.mode.migration.done": "true",
+    "ts.external.directory.path": "/Users/aidenbuck/Desktop/Business-Sales-Predictor-Group/frontend/my-app/node_modules/typescript/lib",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-d6986cc7102b-9b0f141eb926-JavaScript-PY-253.31033.139" />
+        <option value="bundled-python-sdk-2653e85de345-6d6dccd035ac-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-253.31033.139" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="3300b219-cfbd-45ea-a595-6b1e4c006fb4" name="Changes" comment="" />
+      <created>1774898193751</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1774898193751</updated>
+      <workItem from="1774898194788" duration="4597000" />
+      <workItem from="1775091519040" duration="715000" />
+      <workItem from="1775508914983" duration="1852000" />
+    </task>
+    <task id="LOCAL-00001" summary="predictions with new gdp">
+      <option name="closed" value="true" />
+      <created>1775090996589</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1775090996589</updated>
+    </task>
+    <task id="LOCAL-00002" summary="deleted unused things">
+      <option name="closed" value="true" />
+      <created>1775091410023</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1775091410023</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="predictions with new gdp" />
+    <MESSAGE value="deleted unused things" />
+    <MESSAGE value="gdp now included and updated." />
+    <option name="LAST_COMMIT_MESSAGE" value="gdp now included and updated." />
+  </component>
+</project>

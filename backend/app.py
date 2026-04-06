@@ -2,14 +2,25 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import numpy as np
 import tensorflow as tf
+import keras
 import math
+
+# Patch Dense.from_config to ignore quantization_config (model saved with newer Keras)
+_original_dense_from_config = keras.layers.Dense.from_config.__func__
+
+@classmethod
+def _patched_from_config(cls, config):
+    config.pop("quantization_config", None)
+    return _original_dense_from_config(cls, config)
+
+keras.layers.Dense.from_config = _patched_from_config
 
 app = Flask(__name__)
 CORS(app)
 
-women_model = tf.keras.models.load_model("women_model.keras")
-men_model = tf.keras.models.load_model("men_model.keras")
-other_model = tf.keras.models.load_model("other_model.keras")
+women_model = keras.models.load_model("women_model.keras")
+men_model = keras.models.load_model("men_model.keras")
+other_model = keras.models.load_model("other_model.keras")
 
 # Holiday mapping by quarter (deterministic)
 QUARTER_HOLIDAYS = {
