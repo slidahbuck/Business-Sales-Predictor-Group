@@ -53,7 +53,7 @@ export default function App() {
  const [selectedQuarter, setSelectedQuarter] = useState(null);
  const [predictionQuarter, setPredictionQuarter] = useState('');
  const [predictionYear, setPredictionYear] = useState('');
- const [predictionGdp, setPredictionGdp] = useState('');
+ const [gdpChange, setGdpChange] = useState('');
  const [weatherInputs, setWeatherInputs] = useState({
    rainy_days: '', snowy_days: '', foggy_days: '',
  });
@@ -73,6 +73,8 @@ export default function App() {
 
 
  const maxValue = Math.max(...currentData.map(d => d.predicted), 1);
+ const minValue = Math.min(...currentData.map(d => d.predicted));
+ const barFloor = forecastData ? minValue * 0.85 : 0;
  const highestQuarter = currentData.reduce((max, item) => item.predicted > max.predicted ? item : max);
  const lowestQuarter = currentData.reduce((min, item) => item.predicted < min.predicted ? item : min);
 
@@ -90,7 +92,7 @@ export default function App() {
 
 
      const buildUrl = (year, quarter, gdp) => {
-       let url = `http://34.143.140.54:5000/api/walmart/predict?year=${year}&quarter=${quarter}&gdp=${gdp}`;
+       let url = `http://localhost:5050/api/walmart/predict?year=${year}&quarter=${quarter}&gdp=${gdp}`;
        if (weatherParams) url += '&' + weatherParams;
        return url;
      };
@@ -98,15 +100,17 @@ export default function App() {
 
      const year = parseInt(predictionYear);
      const prevYear = year - 1;
+     const pct = parseFloat(gdpChange) / 100;
 
 
      // Fetch all 4 quarters for selected year + previous year (for YoY)
-     // Use user-provided GDP for current year, historical GDP for previous year
+     // GDP for current year = previous year's GDP * (1 + selected % change)
      const fetches = [];
      for (let q = 1; q <= 4; q++) {
-       fetches.push(fetch(buildUrl(year, q, predictionGdp)).then(r => r.json()));
-       const prevGdp = GDP_LOOKUP[`${prevYear}-${q}`] || predictionGdp;
-       fetches.push(fetch(buildUrl(prevYear, q, prevGdp)).then(r => r.json()));
+       const prevGdp = GDP_LOOKUP[`${prevYear}-${q}`];
+       const currentGdp = prevGdp ? Math.round(prevGdp * (1 + pct) * 1000) / 1000 : 30000;
+       fetches.push(fetch(buildUrl(year, q, currentGdp)).then(r => r.json()));
+       fetches.push(fetch(buildUrl(prevYear, q, prevGdp || currentGdp)).then(r => r.json()));
      }
      const results = await Promise.all(fetches);
 
@@ -284,14 +288,23 @@ export default function App() {
 
 
                  <div className="form-group">
-                   <label>Quarterly GDP ($M)</label>
-                   <input
-                     type="number"
+                   <label>GDP Change (YoY)</label>
+                   <select
                      className="input-field"
-                     placeholder="e.g., 30000"
-                     value={predictionGdp}
-                     onChange={(e) => setPredictionGdp(e.target.value)}
-                   />
+                     value={gdpChange}
+                     onChange={(e) => setGdpChange(e.target.value)}
+                   >
+                     <option value="">Select growth rate...</option>
+                     <option value="-3">-3%</option>
+                     <option value="-2">-2%</option>
+                     <option value="-1">-1%</option>
+                     <option value="0">0% (Flat)</option>
+                     <option value="1">+1%</option>
+                     <option value="2">+2%</option>
+                     <option value="3">+3%</option>
+                     <option value="4">+4%</option>
+                     <option value="5">+5%</option>
+                   </select>
                  </div>
                </div>
 
@@ -319,7 +332,7 @@ export default function App() {
                <button
                  className="predict-button"
                  onClick={fetchPrediction}
-                 disabled={!predictionQuarter || !predictionYear || !predictionGdp}
+                 disabled={!predictionQuarter || !predictionYear || gdpChange === ''}
                >
                  Predict Sales
                </button>
@@ -414,7 +427,7 @@ export default function App() {
                    >
                      <div
                        className={`bar ${selectedQuarter === index ? 'selected' : ''}`}
-                       style={{ height: `${(item.predicted / maxValue) * 100}%` }}
+                       style={{ height: `${((item.predicted - barFloor) / (maxValue - barFloor)) * 100}%` }}
                      >
                        <span className="bar-value">${item.predicted}K</span>
                      </div>
